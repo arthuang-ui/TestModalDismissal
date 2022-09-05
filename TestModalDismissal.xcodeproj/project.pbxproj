@@ -11,6 +11,7 @@
 		DF4F836828C5D5F5005BE97D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF4F836728C5D5F5005BE97D /* ContentView.swift */; };
 		DF4F836A28C5D5F5005BE97D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DF4F836928C5D5F5005BE97D /* Assets.xcassets */; };
 		DF4F836D28C5D5F5005BE97D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DF4F836C28C5D5F5005BE97D /* Preview Assets.xcassets */; };
+		DF4F837528C5D8A0005BE97D /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DF4F837428C5D8A0005BE97D /* ComposableArchitecture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DF4F837528C5D8A0005BE97D /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +85,9 @@
 			dependencies = (
 			);
 			name = TestModalDismissal;
+			packageProductDependencies = (
+				DF4F837428C5D8A0005BE97D /* ComposableArchitecture */,
+			);
 			productName = TestModalDismissal;
 			productReference = DF4F836228C5D5F5005BE97D /* TestModalDismissal.app */;
 			productType = "com.apple.product-type.application";
@@ -111,6 +116,9 @@
 				Base,
 			);
 			mainGroup = DF4F835928C5D5F5005BE97D;
+			packageReferences = (
+				DF4F837328C5D8A0005BE97D /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
+			);
 			productRefGroup = DF4F836328C5D5F5005BE97D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -195,7 +203,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -249,7 +257,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -339,6 +347,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DF4F837328C5D8A0005BE97D /* XCRemoteSwiftPackageReference "swift-composable-architecture" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:pointfreeco/swift-composable-architecture.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DF4F837428C5D8A0005BE97D /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DF4F837328C5D8A0005BE97D /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
+			productName = ComposableArchitecture;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DF4F835A28C5D5F5005BE97D /* Project object */;
 }
