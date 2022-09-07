@@ -12,6 +12,8 @@ import SwiftUI
 struct BaseState<State: Equatable & Identifiable>: Equatable, Identifiable {
   var wrapped: State
   var colors: [Color]
+  var isPresentingAlert: Bool
+  var isPresentingConfirmationDialog: Bool
 
   var id: State.ID { wrapped.id }
 
@@ -44,7 +46,9 @@ extension BaseState where State == ContentState {
       }
       return .init(
         wrapped: .init(id: wrapped.id + 1),
-        colors: colors
+        colors: colors,
+        isPresentingAlert: isPresentingAlert,
+        isPresentingConfirmationDialog: isPresentingConfirmationDialog
       )
     }
     set {
@@ -52,6 +56,40 @@ extension BaseState where State == ContentState {
         return
       }
       colors = nextState.colors
+      isPresentingAlert = nextState.isPresentingAlert
+      isPresentingConfirmationDialog = nextState.isPresentingConfirmationDialog
+    }
+  }
+
+  var alertState: AlertState<ContentAction>? {
+    if isPresentingAlert && colors.endIndex - 1 == wrapped.id {
+      return .init(
+        title: .init("Alert"),
+        primaryButton: .default(
+          .init("Dismiss All"),
+          action: .send(.dismissAll)
+        ),
+        secondaryButton: .cancel(.init("Cancel"))
+      )
+    } else {
+      return nil
+    }
+  }
+
+  var confirmationDialogState: ConfirmationDialogState<ContentAction>? {
+    if isPresentingConfirmationDialog && colors.endIndex - 1 == wrapped.id {
+      return .init(
+        title: .init("Action Sheet"),
+        buttons: [
+          .default(
+            .init("Dismiss All"),
+            action: .send(.dismissAll)
+          ),
+          .cancel(.init("Cancel"))
+        ]
+      )
+    } else {
+      return nil
     }
   }
 }
@@ -61,6 +99,10 @@ indirect enum ContentAction: Equatable {
   case dismissAll
   case onDismiss
   case readyToDismiss
+  case presentAlert
+  case alertCancelTapped
+  case presentConfirmationDialog
+  case confirmationDialogCancelTapped
   case next(ContentAction)
 }
 
@@ -85,11 +127,45 @@ let contentReducer = Reducer<
     if state.colors.indices.contains(state.id + 1) {
       return .init(value: .next(.onDismiss))
     } else {
-      return .init(value: .readyToDismiss)
+      var shouldDelay = false
+
+      if state.isPresentingAlert {
+        state.isPresentingAlert = false
+        shouldDelay = true
+      }
+
+      if state.isPresentingConfirmationDialog {
+        state.isPresentingConfirmationDialog = false
+        shouldDelay = true
+      }
+
+      if shouldDelay {
+        return .init(value: .readyToDismiss)
+          .delay(for: 0.1, scheduler: DispatchQueue.main)
+          .eraseToEffect()
+      } else {
+        return .init(value: .readyToDismiss)
+      }
     }
 
   case .readyToDismiss:
     // leave this to parent
+    return .none
+
+  case .presentAlert:
+    state.isPresentingAlert = true
+    return .none
+
+  case .alertCancelTapped:
+    state.isPresentingAlert = false
+    return .none
+
+  case .presentConfirmationDialog:
+    state.isPresentingConfirmationDialog = true
+    return .none
+
+  case .confirmationDialogCancelTapped:
+    state.isPresentingConfirmationDialog = false
     return .none
 
   case .next(.readyToDismiss):
@@ -134,6 +210,22 @@ struct ContentView: View {
           .foregroundColor(.white)
           .background(Color.blue)
           .clipShape(Capsule())
+
+          Button("Present Alert") {
+            viewStore.send(.presentAlert)
+          }
+          .padding()
+          .foregroundColor(.white)
+          .background(Color.blue)
+          .clipShape(Capsule())
+
+          Button("Present Action Sheet") {
+            viewStore.send(.presentConfirmationDialog)
+          }
+          .padding()
+          .foregroundColor(.white)
+          .background(Color.blue)
+          .clipShape(Capsule())
         }
       }
       .sheet(item: Binding(
@@ -148,6 +240,14 @@ struct ContentView: View {
           then: ContentView.init
         )
       }
+      .alert(
+        store.scope(state: \.alertState),
+        dismiss: .alertCancelTapped
+      )
+      .confirmationDialog(
+        store.scope(state: \.confirmationDialogState),
+        dismiss: .confirmationDialogCancelTapped
+      )
     }
   }
 }
@@ -157,7 +257,12 @@ struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       ContentView(store: .init(
-        initialState: .init(wrapped: .init(id: 0), colors: [.white]),
+        initialState: .init(
+          wrapped: .init(id: 0),
+          colors: [.white],
+          isPresentingAlert: false,
+          isPresentingConfirmationDialog: false
+        ),
         reducer: contentReducer,
         environment: .init(dismissAll: { .none })
       ))

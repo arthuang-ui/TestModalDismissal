@@ -10,16 +10,22 @@ import SwiftUI
 
 struct AppState: Equatable {
   var colors: [Color]
+  var isPresentingAlert = false
+  var isPresentingConfirmationDialog = false
 
   var contentState: BaseState<ContentState> {
     get {
       .init(
         wrapped: .init(id: 0),
-        colors: colors
+        colors: colors,
+        isPresentingAlert: isPresentingAlert,
+        isPresentingConfirmationDialog: isPresentingConfirmationDialog
       )
     }
     set {
       colors = newValue.colors
+      isPresentingAlert = newValue.isPresentingAlert
+      isPresentingConfirmationDialog = newValue.isPresentingConfirmationDialog
     }
   }
 }
