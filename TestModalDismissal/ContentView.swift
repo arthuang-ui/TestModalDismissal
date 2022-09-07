@@ -58,13 +58,14 @@ extension BaseState where State == ContentState {
 
 indirect enum ContentAction: Equatable {
   case setNextColor
+  case dismissAll
+  case onDismiss
+  case readyToDismiss
   case next(ContentAction)
 }
 
-struct ContentEnvironment {}
-
-extension ContentEnvironment {
-  static var live = Self()
+struct ContentEnvironment {
+  var dismissAll: () -> Effect<ContentAction, Never>
 }
 
 let contentReducer = Reducer<
@@ -76,6 +77,26 @@ let contentReducer = Reducer<
   case .setNextColor:
     state.colors.append(.random)
     return .none
+
+  case .dismissAll:
+    return environment.dismissAll()
+
+  case .onDismiss:
+    if state.colors.indices.contains(state.id + 1) {
+      return .init(value: .next(.onDismiss))
+    } else {
+      return .init(value: .readyToDismiss)
+    }
+
+  case .readyToDismiss:
+    // leave this to parent
+    return .none
+
+  case .next(.readyToDismiss):
+    state.colors = .init(state.colors[0...state.id])
+    return .init(value: .readyToDismiss)
+      .delay(for: 0.6, scheduler: DispatchQueue.main)
+      .eraseToEffect()
 
   case .next:
     return self.optional().pullback(
@@ -97,13 +118,23 @@ struct ContentView: View {
         viewStore.color
           .ignoresSafeArea()
 
-        Button("Present") {
-          viewStore.send(.setNextColor)
+        VStack {
+          Button("Present") {
+            viewStore.send(.setNextColor)
+          }
+          .padding()
+          .foregroundColor(.white)
+          .background(Color.blue)
+          .clipShape(Capsule())
+
+          Button("Dismiss All") {
+            viewStore.send(.dismissAll)
+          }
+          .padding()
+          .foregroundColor(.white)
+          .background(Color.blue)
+          .clipShape(Capsule())
         }
-        .padding()
-        .foregroundColor(.white)
-        .background(Color.blue)
-        .clipShape(Capsule())
       }
       .sheet(item: Binding(
         get: { viewStore.nextState },
@@ -128,7 +159,7 @@ struct ContentView_Previews: PreviewProvider {
       ContentView(store: .init(
         initialState: .init(wrapped: .init(id: 0), colors: [.white]),
         reducer: contentReducer,
-        environment: .live
+        environment: .init(dismissAll: { .none })
       ))
     }
   }
